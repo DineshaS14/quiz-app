@@ -15,6 +15,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setName(inputName);  // Set the name in context
+    onSubmit(inputName);
     window.history.pushState({}, '', '/quiz');  // Change the URL without reloading the page
     const navEvent = new PopStateEvent('popstate');
     window.dispatchEvent(navEvent);  // Dispatch a navigation event

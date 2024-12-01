@@ -43,6 +43,7 @@ const App: React.FC = () => {
   };
   function handleUserFormSubmit(name: string) {
     setUserName(name);
+    console.log(userName);
   };
   // Determine the result element based on answers
   const determineElement = (answers: string[]): string => {

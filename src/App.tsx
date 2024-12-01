@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useContext } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { UserProvider, UserContext } from "./components/UserContext";
-import Results from "./components/Results";
-import Question from "./components/Question";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import { UserProvider } from "./components/UserContext";
+import Header from "./components/Header";
 import UserForm from "./components/UserForm";
+import Question from "./components/Question";
+import Results from "./components/Results";
 import "./App.css";
 
-// Quiz questions and configuration
 const questions = [
   {
     question: "What's your favorite color?",
@@ -29,32 +29,35 @@ const elements: { [key: string]: string } = {
 };
 
 const App: React.FC = () => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0); // Current question index
-  const [answers, setAnswers] = useState<string[]>([]); // User's answers
-  const [element, setElement] = useState<string>(""); // Resulting element
-  const [artwork, setArtwork] = useState<any>(null); // Artwork data from API
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [element, setElement] = useState<string>("");
+  const [artwork, setArtwork] = useState<any>(null);
+  const [userName, setUserName] = useState<string>('');
 
-  // Access user name from UserContext
-  const { name, setName } = useContext(UserContext);
 
   // Handle answer selection
-  function handleAnswer(answer: string) {
-    setAnswers((prevAnswers) => [...prevAnswers, answer]); // Add answer
-    setCurrentQuestionIndex((prevIndex) => prevIndex + 1); // Move to next question
-  }
-
-  // Determine the user's element
-  function determineElement(answers: string[]): string {
+  const handleAnswer = (answer: string) => {
+    setAnswers((prev) => [...prev, answer]);
+    setCurrentQuestionIndex((prev) => prev + 1);
+  };
+  function handleUserFormSubmit(name: string) {
+    setUserName(name);
+  };
+  // Determine the result element based on answers
+  const determineElement = (answers: string[]): string => {
     const counts: { [key: string]: number } = {};
     answers.forEach((answer) => {
-      const element = elements[answer];
-      counts[element] = (counts[element] || 0) + 1;
+      const elem = elements[answer];
+      counts[elem] = (counts[elem] || 0) + 1;
     });
-    return Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
-  }
+    return Object.keys(counts).reduce((a, b) =>
+      counts[a] > counts[b] ? a : b
+    );
+  };
 
-  // Fetch artwork based on element
-  async function fetchArtwork(keyword: string) {
+  // Fetch artwork from the API
+  const fetchArtwork = async (keyword: string) => {
     try {
       const response = await fetch(
         `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${keyword}`
@@ -65,51 +68,38 @@ const App: React.FC = () => {
           `https://collectionapi.metmuseum.org/public/collection/v1/objects/${data.objectIDs[0]}`
         );
         const artworkData = await artworkResponse.json();
-        setArtwork(artworkData); // Set fetched artwork
+        setArtwork(artworkData);
       }
     } catch (error) {
       console.error("Error fetching artwork:", error);
     }
-  }
+  };
 
-  // Run when quiz finishes
   useEffect(() => {
     if (currentQuestionIndex === questions.length) {
-      const selectedElement = determineElement(answers); // Determine the most selected element
-      setElement(selectedElement); // Set result element
-      fetchArtwork(keywords[selectedElement]); // Fetch related artwork
+      const selectedElement = determineElement(answers);
+      setElement(selectedElement);
+      fetchArtwork(keywords[selectedElement]);
     }
   }, [currentQuestionIndex]);
 
   return (
     <UserProvider>
       <Router>
+        <Header />
         <Routes>
-          {/* User form for name input */}
-          <Route
-            path="/"
-            element={
-              <UserForm
-                onSubmit={(userName: string) => setName(userName)}
-              />
-            }
-          />
-          {/* Quiz question or results */}
-          <Route
-            path="/quiz"
-            element={
-              currentQuestionIndex < questions.length ? (
-                <Question
-                  question={questions[currentQuestionIndex].question}
-                  options={questions[currentQuestionIndex].options}
-                  onAnswer={handleAnswer}
-                />
-              ) : (
-                <Results element={element} artwork={artwork} />
-              )
-            }
-          />
-        </Routes>
+  <Route path="/" element={<UserForm onSubmit={handleUserFormSubmit} />} />
+  <Route
+    path="/quiz"
+    element={
+      currentQuestionIndex < questions.length ? (
+        <Question question={questions[currentQuestionIndex].question} options={questions[currentQuestionIndex].options} onAnswer={handleAnswer} />
+      ) : (
+        <Results element={element} artwork={artwork} />
+      )
+    }
+  />
+</Routes>
       </Router>
     </UserProvider>
   );

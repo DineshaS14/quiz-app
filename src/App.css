@@ -22,9 +22,14 @@ nav a {
   display: inline-block;
   margin: 0 10px;
 }
-
+nav:hover {
+  background: black;
+  color: white;
+  
+}
 nav a:hover {
   text-decoration: underline;
+  color: white;
 }
 
 /* Form Styles */

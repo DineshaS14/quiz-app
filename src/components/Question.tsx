@@ -1,5 +1,3 @@
-import React from "react";
-
 interface questionProps {
     question: string;
     options: string[];

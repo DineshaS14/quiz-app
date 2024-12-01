@@ -1,6 +1,7 @@
 import React, { useState, useContext, FormEvent } from 'react';
 import { UserContext } from './UserContext';
 
+
 // Define the props for UserForm
 interface UserFormProps {
   onSubmit: (userName: string) => void;
@@ -9,12 +10,14 @@ interface UserFormProps {
 const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
   const [inputName, setInputName] = useState<string>(''); // State for form input
   const { setName } = useContext(UserContext); // Access context
-
+  
   // Handle form submission
   function handleSubmit(e: FormEvent) {
-    e.preventDefault(); // Prevent default form submission behavior
-    setName(inputName); // Set the name in context
-    onSubmit(inputName); // Call the onSubmit function passed via props
+    e.preventDefault();
+    setName(inputName);  // Set the name in context
+    window.history.pushState({}, '', '/quiz');  // Change the URL without reloading the page
+    const navEvent = new PopStateEvent('popstate');
+    window.dispatchEvent(navEvent);  // Dispatch a navigation event
   }
 
   return (
